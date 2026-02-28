@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLI Personal Site</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        // --- Firebase Imports for Mandatory Environment Compliance ---
+        // NOTE: Although this app does not require a database, Firebase setup is mandatory
+        // to comply with the execution environment's requirements.
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase-related variables (will be set in init)
+        let auth;
+        let db;
+        let userId;
+
+      
+        const FSD = {
+            '/': {
+                type: 'dir',
+                children: {
+                    'about_me': {
+                        type: 'dir',
+                        description: 'a little bit about me.',
+                        children: {
+                            'bio.txt': {
+                                type: 'file',
+                                content: " hello! my name is anvita bhamidipati. i’m a sophomore at rutgers university – nb majoring in computer science and minoring in economics. in the realm of tech, my interests lie in ai, product management, ui/ux design, frontend development, and cybersecurity. i love the creative aspects of tech; dreaming up cool visuals and using code to bring it to life. a you can find me playing around with fun website ui or ctf challenges. apart from that, i love messing around with recipes, writing, taking photos, and travelling",
+                            },
+                            'skills.txt': {
+                                type: 'file',
+                                content: "LANGUAGES: Java, Python (pandas, numpy, scikit-learn), JavaScript, Swift, C\nFRAMEWORKS & TOOLS: Node.js, Flask, Firebase, Git, SwiftUI, React\nDATABASES: Access\nDESIGN: Canva, Figma",
+                            },
+                            'opensesame.txt': {
+                                type: 'file',
+                                content: "# OPENSESAME\n\n**How do you see OpenSesame fitting into your career journey or long-term goals?**\nI've realized that my favorite coding projects are the ones that make navigating education easier. For example, I recently built a full-stack Degree Planner to help Rutgers students automatically track their coursework and major requirements without pulling their hair out. Seeing people use something I made to streamline their academic life was incredible. Long-term, I want to keep building at that exact intersection of tech and learning. OpenSesame caught my eye because you're doing this at a massive scale for the workforce. I'm really looking for an environment where I can learn how a mature SaaS platform is actually built, tested, and scaled in the real world, and your focus on iterative, highly collaborative development sounds exactly like the kind of engineering culture I want to grow in.\n\n**What strengths, skills, or perspectives will you bring to OpenSesame to make an impact and contribute to our mission?**\nI bring a mix of hands-on technical building and a genuine love for teaching. As the Frontend Education Director for Blueprint at Rutgers, I spend a lot of time breaking down complex web dev concepts for my students, which has made me a huge advocate for writing clean, readable code and giving constructive feedback. I also thrive when bouncing ideas off teammates. When my team and I built ProdKat (an automated study scheduler) at HackRU, working closely together to integrate the Canvas API and write the Python time-management algorithms was the best part of the whole process. I think that collaborative energy—combined with my full-stack toolkit across React, Node.js, and Python—will translate perfectly into a team that values pair programming and learning together.\n\n**What excites you most about working with AI, and how do you think it can shape the future of learning and work?**\nI think AI is the ultimate productivity sidekick. Instead of worrying about it replacing creativity, I love using it as a tool to take human ideas to the next level. When it comes to learning, AI is basically the personalized tutor we all wished we had—it can adapt to how fast you learn, summarize dense topics on the fly, and radically enhance the overall user experience. I recently integrated the Gemini API into my pantry management app, stock'd, to handle OCR and semantic parsing, and saw firsthand how much friction it removes from everyday tasks. I'm super excited to bring that same 'make-things-easier' energy to OpenSesame's AI-driven educational products!",
+                            }
+                        }
+                    },
+                    'my_work': {
+                        type: 'dir',
+                        description: 'portfolio and experience.',
+                        children: {
+                            'projects.md': {
+                                type: 'file',
+                                content: "# MY CODING PROJECTS\n\n**1. Personal Journaling & Mood Tracker App (iOS / SwiftUI)**\n- Developed a full-stack native iOS application allowing users to log daily entries and track moods.\n- Implemented real-time data synchronization with a Firebase Firestore backend.\n- Integrated data visualizations using the native Charts framework.\n\n**2. Rutgers Degree Planner Web App (Node.js / Express)**\n- Built a web application to track Rutgers degree requirements and progress.\n- Pulled course data from SAS advising sites with automated population of major/minor options.\n- Built a responsive frontend in HTML, CSS, and JavaScript with real-time credit tracking.\n\n**3. ProdKat - HackRU (Python / Flask)**\n- Developed a full-stack academic planning tool to generate personalized study schedules.\n- Engineered a Python time-management algorithm analyzing course difficulty and assignment load.\n- Leveraged the Canvas API to programmatically fetch student due dates and grades.\n\n**4. stock'd (React, HTML/JS, Gemini API)**\n- Engineered a full-stack pantry management web app that leverages the Gemini API for OCR and semantic parsing of grocery receipts, achieving automated inventory logging.\n- Integrated the USDA FoodData Central API to enrich scanned items with precise nutritional metadata and estimated shelf-life algorithms.",
+                            },
+                            'resume.txt': {
+                                type: 'file',
+                                content: "EDUCATION:\n- Rutgers University, New Brunswick | B.S. in Computer Science, Minor in Economics (May 2028)\n\nEXPERIENCE & LEADERSHIP:\n- Frontend SWE Education Director @ Blueprint, Rutgers (Oct 2025 - Present)\n- Under-Secretary-General for IT @ SMIS Model UN (Jul 2023 - Sep 2023)\n- President @ SMIS STEM Society (Jul 2022 - Dec 2022)",
+                            }
+                        }
+                    },
+                    'miscellaneous': {
+                        type: 'dir',
+                        description: 'under construction: random hobbies.',
+                        children: {
+                            'hobbies.txt': {
+                                type: 'file',
+                                content: "INTERESTS:\n- Finance & Economics\n- Frontend Web Development\n- Hackathons\n- UI/UX Design",
+                            },
+                            'quotes.txt': {
+                                type: 'file',
+                                content: "\"The best way to predict the future is to invent it.\" - Alan Kay",
+                            }
+                        }
+                    },
+                    'contact_me': {
+                        type: 'dir',
+                        description: 'Ways to establish a connection.',
+                        children: {
+                            'ping.txt': {
+                                type: 'file',
+                                content: "EMAIL: <a href='mailto:anvita.bhamidipati@gmail.com' class='text-green-200 underline hover:text-white transition-colors duration-200'>anvita.bhamidipati@gmail.com</a>\nPHONE: (925) 915-0811\nGITHUB: <a href='https://github.com/antistrange05' target='_blank' class='text-green-200 underline hover:text-white transition-colors duration-200'>github.com/antistrange05</a>\nLINKEDIN: <a href='https://www.linkedin.com/in/anvita-bhamidipati' target='_blank' class='text-green-200 underline hover:text-white transition-colors duration-200'>linkedin.com/in/anvita-bhamidipati</a>",
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Global state for terminal
+        let cwd = '/'; // Current Working Directory
+        const terminalOutput = document.getElementById('terminal-output');
+        const commandInput = document.getElementById('command-input');
+        const promptSpan = document.getElementById('prompt');
+        let history = [];
+        let historyIndex = -1;
+
+        // Expose executeCommand to the window so inline onclick handlers can trigger terminal commands
+        window.executeCommand = function(cmd) {
+            history.unshift(cmd);
+            historyIndex = -1;
+            handleCommand(cmd);
+            commandInput.focus();
+        };
+
+        
+        function addLine(text, isHtml = false) {
+            const line = document.createElement('div');
+            line.className = 'py-0.5 text-sm whitespace-pre-wrap';
+            if (isHtml) {
+                line.innerHTML = text;
+            } else {
+                line.textContent = text;
+            }
+            terminalOutput.appendChild(line);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        /**
+         */
+        function updatePrompt() {
+            promptSpan.textContent = `visitor@anvitas-world:${cwd}$`;
+        }
+
+        
+        function resolvePath(path) {
+            let currentDir = FSD['/'];
+
+            // Handle absolute paths
+            if (path.startsWith('/')) {
+                path = path.substring(1);
+            } else {
+                // Handle relative paths from CWD
+                const segments = cwd.split('/').filter(s => s);
+                let tempDir = FSD['/'];
+                for (const segment of segments) {
+                    if (tempDir.children && tempDir.children[segment]) {
+                        tempDir = tempDir.children[segment];
+                    } else {
+                        // Should not happen if CWD is always valid
+                        return null;
+                    }
+                }
+                currentDir = tempDir;
+            }
+
+            if (!path) return FSD['/']; // Root path
+
+            const segments = path.split('/').filter(s => s);
+
+            for (const segment of segments) {
+                if (segment === '..') {
+                    // Navigate up (only works from the root of the path we started resolving from)
+                    if (currentDir === FSD['/']) continue;
+                    currentDir = findParent(currentDir);
+                } else if (segment === '.') {
+                    // Stay in current directory
+                    continue;
+                } else if (currentDir.children && currentDir.children[segment]) {
+                    currentDir = currentDir.children[segment];
+                } else {
+                    return null; // Path segment not found
+                }
+            }
+            return currentDir;
+        }
+
+    
+        function findParent(targetNode) {
+            const search = (node) => {
+                if (node.children) {
+                    for (const key in node.children) {
+                        if (node.children[key] === targetNode) {
+                            return node;
+                        }
+                        const found = search(node.children[key]);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+            return search(FSD['/']);
+        }
+
+        
+        function handleCommand(command) {
+            // Echo the command first and keep a reference to the line
+            const promptLine = document.createElement('div');
+            promptLine.className = 'py-0.5 text-sm whitespace-pre-wrap';
+            promptLine.innerHTML = `<span class="text-green-300 font-bold">${promptSpan.textContent}</span> <span class="text-white">${command}</span>`;
+            terminalOutput.appendChild(promptLine);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+            const parts = command.trim().split(/\s+/).filter(p => p.length > 0);
+            if (parts.length === 0) return promptLine;
+
+            const cmd = parts[0].toLowerCase();
+            const args = parts.slice(1);
+
+            switch (cmd) {
+                case 'help':
+                    cmdHelp();
+                    break;
+                case 'ls':
+                    cmdLs();
+                    break;
+                case 'cd':
+                    cmdCd(args[0]);
+                    break;
+                case 'cat':
+                    cmdCat(args[0]);
+                    break;
+                case 'clear':
+                    cmdClear();
+                    break;
+                case 'whoami':
+                    cmdWhoami();
+                    break;
+                case 'welcome':
+                    cmdWelcome();
+                    break;
+                default:
+                    addLine(`Command not found: ${cmd}. Type 'help' for available commands.`);
+            }
+            
+            return promptLine;
+        }
+
+
+        // Add support for chained commands (e.g., 'cd my_work; ls')
+        const originalHandleCommand = handleCommand;
+        handleCommand = function(command) {
+            const subCommands = command.split(';');
+            let scrollTarget = null;
+
+            if (subCommands.length > 1) {
+                subCommands.forEach(cmd => {
+                    const trimmedCmd = cmd.trim();
+                    if (trimmedCmd) {
+                        if (trimmedCmd.toLowerCase() === 'clear') {
+                            scrollTarget = null; // Reset target if terminal is cleared
+                        }
+                        const pLine = originalHandleCommand(trimmedCmd);
+                        // Save the first prompt after a clear, or the first prompt overall
+                        if (!scrollTarget && trimmedCmd.toLowerCase() !== 'clear') {
+                            scrollTarget = pLine;
+                        }
+                    }
+                });
+            } else {
+                scrollTarget = originalHandleCommand(command);
+            }
+
+            // Ensure we scroll to the top of the command output so long files aren't scrolled to the bottom
+            setTimeout(() => {
+                if (scrollTarget) {
+                    scrollTarget.scrollIntoView({ behavior: 'auto', block: 'start' });
+                } else {
+                    terminalOutput.scrollTop = 0; // Fallback for pure 'clear'
+                }
+            }, 10);
+        };
+
+
+        function cmdWelcome() {
+             addLine("==================================================================", true);
+             addLine("           <span class='text-green-300 font-bold'>Welcome to my Personal Site!</span>", true);
+             addLine("==================================================================", true);
+             addLine("System initialized. User workspace loaded.");
+             addLine("A space for all things creativity and tech.");
+             addLine("Use the <span class='text-green-300'>help</span> command to see a list of available actions.", true);
+             addLine(`Session ID: <span class='text-green-700'>${userId}</span>`, true);
+             addLine("<br/>Short on time? Click a quick link below:", true);
+             
+             // OpenSesame specifically highlighted link
+             addLine(`  [<span class='text-yellow-300 font-bold cursor-pointer hover:underline hover:text-white transition-colors duration-200' onclick="executeCommand('clear; cat about_me/opensesame.txt')">★ OpenSesame - open me!</span>]`, true);
+             
+             addLine(`  [<span class='text-white cursor-pointer hover:underline' onclick="executeCommand('clear; cat about_me/bio.txt')">View Bio</span>]  ` +
+                     `[<span class='text-white cursor-pointer hover:underline' onclick="executeCommand('clear; cat my_work/projects.md')">View Projects</span>]  ` +
+                     `[<span class='text-white cursor-pointer hover:underline' onclick="executeCommand('clear; cat my_work/resume.txt')">View Resume</span>]  ` +
+                     `[<span class='text-white cursor-pointer hover:underline' onclick="executeCommand('clear; cat contact_me/ping.txt')">Contact Me</span>]`, true);
+             addLine("<br/>Or, click any of the directories below to explore:", true);
+        }
+
+        function cmdHelp() {
+            addLine(`
+Available commands:
+  <span class='text-green-300'>ls</span>         List directory contents.
+  <span class='text-green-300'>cd [dir]</span>     Change the current directory. Use '..' to go up.
+  <span class='text-green-300'>cat [file]</span>   Display the content of a file.
+  <span class='text-green-300'>clear</span>      Clear the terminal screen.
+  <span class='text-green-300'>whoami</span>     Display user login information.
+  <span class='text-green-300'>welcome</span>    Show the welcome message again.
+            `, true);
+        }
+
+        function cmdLs() {
+            const currentDir = resolvePath(cwd);
+
+            if (!currentDir || currentDir.type !== 'dir') {
+                addLine(`Error: Cannot list contents of non-directory path: ${cwd}`);
+                return;
+            }
+
+            const children = currentDir.children;
+            if (!children || Object.keys(children).length === 0) {
+                addLine('(empty directory)');
+                return;
+            }
+
+            let list = "";
+            
+            // Add a "Go Back" (..) option if we are not in the root directory
+            if (cwd !== '/') {
+                // ADDED 'welcome;' to the chained command so the header comes back
+                list += `<span class="text-green-300 font-bold cursor-pointer hover:underline hover:text-white transition-colors duration-200" onclick="executeCommand('clear; cd ..; welcome; ls')">..</span> /  <span class="text-green-700 italic">- Go back up</span>\n`;
+            }
+
+            list += Object.keys(children).map(name => {
+                const node = children[name];
+                const isDir = node.type === 'dir';
+                const color = isDir ? 'text-green-300 font-bold' : 'text-green-500';
+                const description = node.description ? ` - ${node.description}` : '';
+                const action = isDir ? `clear; cd ${name}; ls` : `clear; cat ${name}`; 
+                
+                return `<span class="${color} cursor-pointer hover:underline hover:text-white transition-colors duration-200" onclick="executeCommand('${action}')">${name}</span> ${isDir ? '/' : ''} ${description}`;
+            }).join('\n');
+
+            addLine(list, true);
+        }
+
+        function cmdCd(target) {
+            if (!target) {
+                addLine(`Usage: cd <directory>`);
+                return;
+            }
+
+            let newPath;
+            if (target === '..') {
+                if (cwd === '/') return; // Cannot go up from root
+                const segments = cwd.split('/').filter(s => s);
+                segments.pop();
+                newPath = '/' + segments.join('/');
+                if (newPath === '') newPath = '/';
+            } else if (target === '.') {
+                return; // Stay in the current directory
+            } else if (target.startsWith('/')) {
+                newPath = target; // Absolute path
+            } else {
+                newPath = cwd === '/' ? `/${target}` : `${cwd}/${target}`; // Relative path
+            }
+
+            // Clean up double slashes
+            newPath = newPath.replace(/\/{2,}/g, '/');
+
+            const targetNode = resolvePath(newPath);
+
+            if (targetNode && targetNode.type === 'dir') {
+                cwd = newPath;
+                updatePrompt();
+            } else {
+                addLine(`cd: no such directory: ${target}`);
+            }
+        }
+
+        function cmdCat(file) {
+            if (!file) {
+                addLine(`Usage: cat <file>`);
+                return;
+            }
+
+            const segments = file.split('/').filter(s => s);
+            const fileName = segments[segments.length - 1];
+
+            // Resolve the path, handling relative paths correctly
+            const targetNode = resolvePath(file);
+
+            if (targetNode && targetNode.type === 'file') {
+                // Simple Markdown-to-CLI formatting (bold/headers)
+                let content = targetNode.content;
+                content = content.replace(/# (.+)/g, (match, p1) => `<span class='text-green-300 font-bold'>--- ${p1.toUpperCase()} ---</span>`);
+                content = content.replace(/\*\*(.+?)\*\*/g, (match, p1) => `<span class='font-bold text-green-200'>${p1}</span>`);
+                addLine(content, true);
+                
+                // ADDED 'welcome;' to the back button chained command!
+                addLine(`<br/><span class="text-green-500 font-bold cursor-pointer hover:underline hover:text-white transition-colors duration-200" onclick="executeCommand('clear; welcome; ls')">[.. Go Back]</span>`, true);
+            } else if (targetNode && targetNode.type === 'dir') {
+                 addLine(`cat: ${fileName}: Is a directory`);
+            } else {
+                addLine(`cat: ${file}: No such file or directory`);
+            }
+        }
+
+        function cmdClear() {
+            terminalOutput.innerHTML = '';
+        }
+
+        function cmdWhoami() {
+            addLine(`<span class='text-green-300'>User ID:</span> ${userId}`, true);
+            addLine(`<span class='text-green-300'>Authentication:</span> ${auth?.currentUser?.isAnonymous ? 'Anonymous' : 'Authenticated'}`, true);
+            addLine(`<span class='text-green-300'>App ID:</span> ${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}`, true);
+        }
+
+        // --- Event Listeners and Initialization ---
+
+        document.addEventListener('keydown', (e) => {
+            // Automatically focus the input when any key is pressed
+            commandInput.focus();
+        });
+
+        commandInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const command = commandInput.value.trim();
+                if (command) {
+                    history.unshift(command);
+                    historyIndex = -1;
+                    handleCommand(command);
+                }
+                commandInput.value = '';
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (history.length > 0) {
+                    historyIndex = (historyIndex + 1) % history.length;
+                    commandInput.value = history[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex >= 0) {
+                    historyIndex = historyIndex - 1;
+                    commandInput.value = historyIndex >= 0 ? history[historyIndex] : '';
+                }
+            }
+        });
+
+        // --- Firebase/Auth Setup ---
+
+        async function init() {
+            try {
+                // Global environment variables provided by the Canvas
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+                if (firebaseConfig) {
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    setLogLevel('debug'); // Enable Firebase logging
+
+                    await new Promise((resolve) => {
+                        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                            unsubscribe(); // Stop listening after the first state change
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken).catch(error => {
+                                    console.error("Custom token sign-in failed:", error);
+                                });
+                            } else {
+                                await signInAnonymously(auth).catch(error => {
+                                    console.error("Anonymous sign-in failed:", error);
+                                });
+                            }
+
+                            // Final auth state check
+                            userId = auth.currentUser?.uid || crypto.randomUUID();
+                            resolve();
+                        });
+                    });
+
+                } else {
+                    console.error("Firebase configuration is missing.");
+                    userId = crypto.randomUUID(); // Fallback ID
+                }
+
+                // Application Start
+                updatePrompt();
+                cmdWelcome();
+                
+                // Automatically run 'ls' on startup to show them their options
+                setTimeout(() => {
+                    executeCommand('ls');
+                }, 400);
+                
+                commandInput.focus(); // Ensure input is focused on load
+
+            } catch (error) {
+                console.error("Initialization error:", error);
+                userId = crypto.randomUUID(); // Fallback ID
+                updatePrompt();
+                cmdWelcome();
+                
+                setTimeout(() => {
+                    executeCommand('ls');
+                }, 400);
+                
+                commandInput.focus();
+            }
+        }
+
+        window.onload = init;
+    </script>
+    <style>
+        /* Custom scrollbar for a cleaner terminal look */
+        .terminal-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .terminal-scroll::-webkit-scrollbar-thumb {
+            background-color: #00ff00; /* Neon green scrollbar */
+            border-radius: 4px;
+        }
+        .terminal-scroll::-webkit-scrollbar-track {
+            background-color: #050505; /* Black track */
+        }
+
+        /* CRT Scanline Effect */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-black text-green-500 min-h-screen font-mono p-4 flex items-center justify-center relative overflow-hidden">
+
+    <div class="w-full max-w-4xl bg-[#050505] border border-green-500 shadow-[0_0_20px_rgba(0,255,0,0.15)] rounded-sm flex flex-col h-[90vh] md:h-[80vh] overflow-hidden relative z-10">
+        
+        <!-- Terminal Header -->
+        <div class="bg-[#0a0a0a] border-b border-green-800 p-2 flex items-center justify-between">
+            <span class="text-xs text-green-600 font-bold ml-2">BEE OS v1.0.0</span>
+            <span class="text-xs text-green-600 mr-2">[ STATUS: ONLINE ]</span>
+        </div>
+
+        <!-- Terminal Output Area -->
+        <div id="terminal-output" class="terminal-scroll p-4 flex-grow overflow-y-auto text-green-500 text-sm md:text-base leading-relaxed">
+            <!-- Output lines will be added here -->
+        </div>
+
+        <!-- Command Input Area -->
+        <div class="p-4 flex">
+            <span id="prompt" class="text-green-500 mr-2 font-bold select-none whitespace-pre">visitor@anvitas-world:/$</span>
+            <input type="text" id="command-input" class="bg-transparent text-green-400 flex-grow focus:outline-none caret-green-500 font-bold" autocomplete="off" spellcheck="false" autofocus>
+        </div>
+    </div>
+
+</body>
+</html>
