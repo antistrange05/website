@@ -75,7 +75,7 @@
                         children: {
                             'ping.txt': {
                                 type: 'file',
-                                content: "EMAIL: <a href='mailto:anvita.bhamidipati@gmail.com' class='text-green-200 underline hover:text-white transition-colors duration-200'>anvita.bhamidipati@gmail.com</a>\nPHONE: (925) 915-0811\nGITHUB: <a href='https://github.com/antistrange05' target='_blank' class='text-green-200 underline hover:text-white transition-colors duration-200'>github.com/antistrange05</a>\nLINKEDIN: <a href='https://www.linkedin.com/in/anvita-bhamidipati' target='_blank' class='text-green-200 underline hover:text-white transition-colors duration-200'>linkedin.com/in/anvita-bhamidipati</a>",
+                                content: "EMAIL: <a href='mailto:anvita.bhamidipati@gmail.com' class='text-cyan-400 underline hover:text-white transition-colors duration-200'>anvita.bhamidipati@gmail.com</a>\nPHONE: (925) 915-0811\nGITHUB: <a href='https://github.com/antistrange05' target='_blank' class='text-cyan-400 underline hover:text-white transition-colors duration-200'>github.com/antistrange05</a>\nLINKEDIN: <a href='https://www.linkedin.com/in/anvita-bhamidipati' target='_blank' class='text-cyan-400 underline hover:text-white transition-colors duration-200'>linkedin.com/in/anvita-bhamidipati</a>",
                             }
                         }
                     }
@@ -102,7 +102,7 @@
         
         function addLine(text, isHtml = false) {
             const line = document.createElement('div');
-            line.className = 'py-0.5 text-sm whitespace-pre-wrap';
+            line.className = 'py-0.5 text-sm whitespace-pre-wrap relative z-10'; // Added z-10 so text stays above watermark
             if (isHtml) {
                 line.innerHTML = text;
             } else {
@@ -182,8 +182,8 @@
         function handleCommand(command) {
             // Echo the command first and keep a reference to the line
             const promptLine = document.createElement('div');
-            promptLine.className = 'py-0.5 text-sm whitespace-pre-wrap';
-            promptLine.innerHTML = `<span class="text-green-300 font-bold">${promptSpan.textContent}</span> <span class="text-white">${command}</span>`;
+            promptLine.className = 'py-0.5 text-sm whitespace-pre-wrap relative z-10';
+            promptLine.innerHTML = `<span class="text-teal-400 font-bold">${promptSpan.textContent}</span> <span class="text-gray-100">${command}</span>`;
             terminalOutput.appendChild(promptLine);
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
 
@@ -216,7 +216,7 @@
                     cmdWelcome();
                     break;
                 default:
-                    addLine(`Command not found: ${cmd}. Type 'help' for available commands.`);
+                    addLine(`Command not found: <span class="text-pink-500">${cmd}</span>. Type 'help' for available commands.`, true);
             }
             
             return promptLine;
@@ -259,34 +259,40 @@
 
 
         function cmdWelcome() {
-             addLine("==================================================================", true);
-             addLine("           <span class='text-green-300 font-bold'>Welcome to my Personal Site!</span>", true);
-             addLine("==================================================================", true);
+             const asciiArt = `<div class="text-[0.55rem] sm:text-xs md:text-sm mb-4 whitespace-pre font-bold select-none" style="line-height: 1.1;">
+<span class="text-pink-500">▄▀█ █▄ █ █ █ █ ▀█▀ ▄▀█</span>
+<span class="text-pink-500">█▀█ █ ▀█ ▀▄▀ █  █  █▀█</span>
+
+<span class="text-teal-400">█▄▄ █ █ ▄▀█ █▀▄▀█ █ █▀▄ █ █▀█ ▄▀█ ▀█▀ █</span>
+<span class="text-teal-400">█▄█ █▀█ █▀█ █ ▀ █ █ █▄▀ █ █▀▀ █▀█  █  █</span></div>`;
+             addLine(asciiArt, true);
+             addLine("<span class='text-pink-500'>==================================================================</span>", true);
+             addLine("           <span class='text-white font-bold tracking-wide'>Welcome to my Personal Site!</span>", true);
+             addLine("<span class='text-pink-500'>==================================================================</span>", true);
              addLine("System initialized. User workspace loaded.");
              addLine("A space for all things creativity and tech.");
-             addLine("Use the <span class='text-green-300'>help</span> command to see a list of available actions.", true);
-             addLine(`Session ID: <span class='text-green-700'>${userId}</span>`, true);
+             addLine("Use the <span class='text-teal-400 font-bold'>help</span> command to see a list of available actions.", true);
+             addLine(`Session ID: <span class='text-gray-500'>${userId}</span>`, true);
              addLine("<br/>Short on time? Click a quick link below:", true);
              
-             // OpenSesame specifically highlighted link
-             addLine(`  [<span class='text-yellow-300 font-bold cursor-pointer hover:underline hover:text-white transition-colors duration-200' onclick="executeCommand('clear; cat about_me/opensesame.txt')">★ OpenSesame - open me!</span>]`, true);
+             addLine(`  [<span class='text-pink-400 font-bold cursor-pointer hover:underline hover:text-pink-300 transition-colors duration-200' onclick="executeCommand('clear; cat about_me/opensesame.txt')">★ OpenSesame - open me!</span>]`, true);
              
-             addLine(`  [<span class='text-white cursor-pointer hover:underline' onclick="executeCommand('clear; cat about_me/bio.txt')">View Bio</span>]  ` +
-                     `[<span class='text-white cursor-pointer hover:underline' onclick="executeCommand('clear; cat my_work/projects.md')">View Projects</span>]  ` +
-                     `[<span class='text-white cursor-pointer hover:underline' onclick="executeCommand('clear; cat my_work/resume.txt')">View Resume</span>]  ` +
-                     `[<span class='text-white cursor-pointer hover:underline' onclick="executeCommand('clear; cat contact_me/ping.txt')">Contact Me</span>]`, true);
+             addLine(`  [<span class='text-teal-300 cursor-pointer hover:underline hover:text-white transition-colors duration-200' onclick="executeCommand('clear; cat about_me/bio.txt')">View Bio</span>]  ` +
+                     `[<span class='text-teal-300 cursor-pointer hover:underline hover:text-white transition-colors duration-200' onclick="executeCommand('clear; cat my_work/projects.md')">View Projects</span>]  ` +
+                     `[<span class='text-teal-300 cursor-pointer hover:underline hover:text-white transition-colors duration-200' onclick="executeCommand('clear; cat my_work/resume.txt')">View Resume</span>]  ` +
+                     `[<span class='text-teal-300 cursor-pointer hover:underline hover:text-white transition-colors duration-200' onclick="executeCommand('clear; cat contact_me/ping.txt')">Contact Me</span>]`, true);
              addLine("<br/>Or, click any of the directories below to explore:", true);
         }
 
         function cmdHelp() {
             addLine(`
 Available commands:
-  <span class='text-green-300'>ls</span>         List directory contents.
-  <span class='text-green-300'>cd [dir]</span>     Change the current directory. Use '..' to go up.
-  <span class='text-green-300'>cat [file]</span>   Display the content of a file.
-  <span class='text-green-300'>clear</span>      Clear the terminal screen.
-  <span class='text-green-300'>whoami</span>     Display user login information.
-  <span class='text-green-300'>welcome</span>    Show the welcome message again.
+  <span class='text-teal-400'>ls</span>         List directory contents.
+  <span class='text-teal-400'>cd [dir]</span>     Change the current directory. Use '..' to go up.
+  <span class='text-teal-400'>cat [file]</span>   Display the content of a file.
+  <span class='text-teal-400'>clear</span>      Clear the terminal screen.
+  <span class='text-teal-400'>whoami</span>     Display user login information.
+  <span class='text-teal-400'>welcome</span>    Show the welcome message again.
             `, true);
         }
 
@@ -308,18 +314,17 @@ Available commands:
             
             // Add a "Go Back" (..) option if we are not in the root directory
             if (cwd !== '/') {
-                // ADDED 'welcome;' to the chained command so the header comes back
-                list += `<span class="text-green-300 font-bold cursor-pointer hover:underline hover:text-white transition-colors duration-200" onclick="executeCommand('clear; cd ..; welcome; ls')">..</span> /  <span class="text-green-700 italic">- Go back up</span>\n`;
+                list += `<span class="text-pink-500 font-bold cursor-pointer hover:underline hover:text-pink-400 transition-colors duration-200" onclick="executeCommand('clear; cd ..; welcome; ls')">..</span> /  <span class="text-gray-500 italic">- Go back up</span>\n`;
             }
 
             list += Object.keys(children).map(name => {
                 const node = children[name];
                 const isDir = node.type === 'dir';
-                const color = isDir ? 'text-green-300 font-bold' : 'text-green-500';
-                const description = node.description ? ` - ${node.description}` : '';
+                const color = isDir ? 'text-teal-400 font-bold' : 'text-gray-300';
+                const description = node.description ? ` - <span class="text-gray-400">${node.description}</span>` : '';
                 const action = isDir ? `clear; cd ${name}; ls` : `clear; cat ${name}`; 
                 
-                return `<span class="${color} cursor-pointer hover:underline hover:text-white transition-colors duration-200" onclick="executeCommand('${action}')">${name}</span> ${isDir ? '/' : ''} ${description}`;
+                return `<span class="${color} cursor-pointer hover:underline hover:text-white transition-colors duration-200" onclick="executeCommand('${action}')">${name}</span> ${isDir ? '<span class="text-teal-600">/</span>' : ''} ${description}`;
             }).join('\n');
 
             addLine(list, true);
@@ -355,7 +360,7 @@ Available commands:
                 cwd = newPath;
                 updatePrompt();
             } else {
-                addLine(`cd: no such directory: ${target}`);
+                addLine(`cd: no such directory: <span class="text-pink-500">${target}</span>`, true);
             }
         }
 
@@ -374,12 +379,11 @@ Available commands:
             if (targetNode && targetNode.type === 'file') {
                 // Simple Markdown-to-CLI formatting (bold/headers)
                 let content = targetNode.content;
-                content = content.replace(/# (.+)/g, (match, p1) => `<span class='text-green-300 font-bold'>--- ${p1.toUpperCase()} ---</span>`);
-                content = content.replace(/\*\*(.+?)\*\*/g, (match, p1) => `<span class='font-bold text-green-200'>${p1}</span>`);
+                content = content.replace(/# (.+)/g, (match, p1) => `<br/><span class='text-pink-500 font-bold'>--- ${p1.toUpperCase()} ---</span><br/>`);
+                content = content.replace(/\*\*(.+?)\*\*/g, (match, p1) => `<span class='font-bold text-teal-300'>${p1}</span>`);
                 addLine(content, true);
                 
-                // ADDED 'welcome;' to the back button chained command!
-                addLine(`<br/><span class="text-green-500 font-bold cursor-pointer hover:underline hover:text-white transition-colors duration-200" onclick="executeCommand('clear; welcome; ls')">[.. Go Back]</span>`, true);
+                addLine(`<br/><span class="text-pink-500 font-bold cursor-pointer hover:underline hover:text-pink-400 transition-colors duration-200" onclick="executeCommand('clear; welcome; ls')">[.. Go Back]</span>`, true);
             } else if (targetNode && targetNode.type === 'dir') {
                  addLine(`cat: ${fileName}: Is a directory`);
             } else {
@@ -388,13 +392,15 @@ Available commands:
         }
 
         function cmdClear() {
-            terminalOutput.innerHTML = '';
+            // Keep the background logo by removing only the lines
+            const lines = terminalOutput.querySelectorAll('.py-0\\.5');
+            lines.forEach(line => line.remove());
         }
 
         function cmdWhoami() {
-            addLine(`<span class='text-green-300'>User ID:</span> ${userId}`, true);
-            addLine(`<span class='text-green-300'>Authentication:</span> ${auth?.currentUser?.isAnonymous ? 'Anonymous' : 'Authenticated'}`, true);
-            addLine(`<span class='text-green-300'>App ID:</span> ${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}`, true);
+            addLine(`<span class='text-teal-400'>User ID:</span> ${userId}`, true);
+            addLine(`<span class='text-teal-400'>Authentication:</span> ${auth?.currentUser?.isAnonymous ? 'Anonymous' : 'Authenticated'}`, true);
+            addLine(`<span class='text-teal-400'>App ID:</span> ${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}`, true);
         }
 
         // --- Event Listeners and Initialization ---
@@ -496,53 +502,43 @@ Available commands:
         window.onload = init;
     </script>
     <style>
-        /* Custom scrollbar for a cleaner terminal look */
+        /* Custom scrollbar matching the magenta theme */
         .terminal-scroll::-webkit-scrollbar {
             width: 8px;
         }
         .terminal-scroll::-webkit-scrollbar-thumb {
-            background-color: #00ff00; /* Neon green scrollbar */
+            background-color: #ec4899; /* Pink-500 scrollbar */
             border-radius: 4px;
         }
         .terminal-scroll::-webkit-scrollbar-track {
-            background-color: #050505; /* Black track */
-        }
-
-        /* CRT Scanline Effect */
-        body::after {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
+            background-color: transparent; 
         }
     </style>
 </head>
-<body class="bg-black text-green-500 min-h-screen font-mono p-4 flex items-center justify-center relative overflow-hidden">
+<body class="bg-[#0B0B0F] text-gray-200 min-h-screen font-mono p-4 flex items-center justify-center relative overflow-hidden">
 
-    <div class="w-full max-w-4xl bg-[#050505] border border-green-500 shadow-[0_0_20px_rgba(0,255,0,0.15)] rounded-sm flex flex-col h-[90vh] md:h-[80vh] overflow-hidden relative z-10">
+    <!-- Main Terminal Container -->
+    <div class="w-full max-w-4xl bg-[#13131A] border border-[#2A2A35] shadow-2xl rounded-sm flex flex-col h-[90vh] md:h-[80vh] overflow-hidden relative z-10">
         
-        <!-- Terminal Header -->
-        <div class="bg-[#0a0a0a] border-b border-green-800 p-2 flex items-center justify-between">
-            <span class="text-xs text-green-600 font-bold ml-2">BEE OS v1.0.0</span>
-            <span class="text-xs text-green-600 mr-2">[ STATUS: ONLINE ]</span>
+        <!-- Terminal Header (Windows Terminal Style) -->
+        <div class="bg-[#0B0B0F] border-b border-[#2A2A35] p-2 flex items-center">
+            <div class="flex space-x-2 px-2">
+                <!-- Mac-style dots optional, but we will use a text tab approach like PowerShell -->
+                <svg class="w-4 h-4 text-cyan-500 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </div>
+            <span class="text-xs text-gray-400 font-bold tracking-wider">anvitas-world.exe</span>
         </div>
 
         <!-- Terminal Output Area -->
-        <div id="terminal-output" class="terminal-scroll p-4 flex-grow overflow-y-auto text-green-500 text-sm md:text-base leading-relaxed">
-            <!-- Output lines will be added here -->
+        <div id="terminal-output" class="terminal-scroll p-4 flex-grow overflow-y-auto text-gray-200 text-sm md:text-base leading-relaxed relative">
+            
+            <!-- Output lines will be appended here (z-10 ensures they sit above the watermark) -->
         </div>
 
         <!-- Command Input Area -->
-        <div class="p-4 flex">
-            <span id="prompt" class="text-green-500 mr-2 font-bold select-none whitespace-pre">visitor@anvitas-world:/$</span>
-            <input type="text" id="command-input" class="bg-transparent text-green-400 flex-grow focus:outline-none caret-green-500 font-bold" autocomplete="off" spellcheck="false" autofocus>
+        <div class="p-4 flex relative z-10 bg-[#13131A]">
+            <span id="prompt" class="text-teal-400 mr-2 font-bold select-none whitespace-pre">visitor@anvitas-world:/$</span>
+            <input type="text" id="command-input" class="bg-transparent text-white flex-grow focus:outline-none caret-pink-500 font-bold" autocomplete="off" spellcheck="false" autofocus>
         </div>
     </div>
 
